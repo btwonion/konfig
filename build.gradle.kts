@@ -33,6 +33,15 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 }
 
+tasks {
+    register("release") {
+        group = "publishing"
+
+        dependsOn("githubRelease")
+        dependsOn("publish")
+    }
+}
+
 kotlin {
     sourceSets.all {
         languageSettings {

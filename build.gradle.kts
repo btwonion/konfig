@@ -62,7 +62,7 @@ githubRelease {
     tagName(project.version.toString())
     body(changelogText)
     targetCommitish("master")
-    setReleaseAssets(tasks["jar"])
+    setReleaseAssets(tasks["remapJar"].outputs.files)
 }
 
 publishing {

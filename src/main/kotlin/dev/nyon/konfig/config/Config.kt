@@ -63,12 +63,12 @@ inline fun <reified T> loadConfig(): @Serializable T? {
     } catch (e: Throwable) {
         val jsonTree = json.encodeToJsonElement(text)
         val version = jsonTree.jsonObject["version"]?.jsonPrimitive?.content?.toIntOrNull()
-        if (version != configSettings!!.currentVersion) {
+        if (version == configSettings!!.currentVersion) {
             saveConfig(defaultInstance)
             return defaultInstance as T
         }
-        val config = configSettings!!.migration.invoke(jsonTree, version) as T
-        saveConfig(config)
+        val config = configSettings!!.migration.invoke(if (version == null) jsonTree else jsonTree.jsonObject["config"] ?: jsonTree, version) as? T
+        saveConfig(config ?: defaultInstance)
         return config
     }
 }

@@ -18,6 +18,7 @@ var configSettings: ConfigSettings? = null
 @InternalKonfigApi
 var defaultInstance: @Serializable Any? = null
 
+@InternalKonfigApi
 val json = Json {
     prettyPrint = true
     ignoreUnknownKeys = true

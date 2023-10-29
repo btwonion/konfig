@@ -54,7 +54,7 @@ inline fun <reified T> loadConfig(): @Serializable T? {
     val path = FabricLoader.getInstance().configDir.resolve("${configSettings!!.name}.json")
     if (path.notExists()) {
         path.createFile()
-        saveConfig(defaultInstance)
+        saveConfig(defaultInstance as T)
         return defaultInstance as T
     }
     val text = path.readText()
@@ -64,11 +64,11 @@ inline fun <reified T> loadConfig(): @Serializable T? {
         val jsonTree = json.parseToJsonElement(text)
         val version = jsonTree.jsonObject["version"]?.jsonPrimitive?.content?.toIntOrNull()
         if (version == configSettings!!.currentVersion) {
-            saveConfig(defaultInstance)
+            saveConfig(defaultInstance as T)
             return defaultInstance as T
         }
         val config = configSettings!!.migration.invoke(if (version == null) jsonTree else jsonTree.jsonObject["config"] ?: jsonTree, version) as? T
-        saveConfig(config ?: defaultInstance)
+        saveConfig(config ?: defaultInstance as T)
         return config
     }
 }

@@ -3,7 +3,6 @@ package dev.nyon.konfig.config
 import dev.nyon.konfig.internal.InternalKonfigApi
 import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import net.fabricmc.loader.api.FabricLoader
@@ -62,7 +61,7 @@ inline fun <reified T> loadConfig(): @Serializable T? {
     try {
         return json.decodeFromString<Konfig<T>>(text).config
     } catch (e: Throwable) {
-        val jsonTree = json.encodeToJsonElement(text)
+        val jsonTree = json.parseToJsonElement(text)
         val version = jsonTree.jsonObject["version"]?.jsonPrimitive?.content?.toIntOrNull()
         if (version == configSettings!!.currentVersion) {
             saveConfig(defaultInstance)

@@ -88,4 +88,5 @@ inline fun <reified T> saveConfig(config: @Serializable T) {
 
 @InternalKonfigApi
 @Suppress("SpellCheckingInspection")
+@Serializable
 data class Konfig<T>(val version: Int, val config: @Serializable T)

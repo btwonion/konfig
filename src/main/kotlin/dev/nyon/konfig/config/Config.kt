@@ -47,7 +47,7 @@ fun <T> config(
 /**
  * This is the function that loads the config from disk and applies a migration if necessary.
  *
- * @return the encoded config or null if an error occurs or the configSettings, which are defined with [config], are null
+ * @return the encoded config or null if the configSettings, which are defined with [config], are null
  */
 @Suppress("unused")
 inline fun <reified T> loadConfig(): @Serializable T? {

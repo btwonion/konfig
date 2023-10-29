@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.nio.file.Path
 import kotlin.io.path.notExists
 import kotlin.io.path.readText
@@ -14,7 +15,7 @@ plugins {
 
 group = "dev.nyon"
 val mcVersion = "1.20.2"
-version = "1.0.1-$mcVersion"
+version = "1.0.2-$mcVersion"
 
 repositories {
     mavenCentral()
@@ -39,6 +40,14 @@ tasks {
 
         dependsOn("githubRelease")
         dependsOn("publish")
+    }
+
+    withType<JavaCompile> {
+        options.release.set(17)
+    }
+
+    withType<KotlinCompile> {
+        kotlinOptions.jvmTarget = "17"
     }
 }
 

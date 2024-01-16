@@ -4,18 +4,18 @@ import kotlin.io.path.notExists
 import kotlin.io.path.readText
 
 plugins {
-    kotlin("jvm") version "1.9.10"
-    kotlin("plugin.serialization") version "1.9.10"
-    id("fabric-loom") version "1.3-SNAPSHOT"
-    id("com.github.breadmoirai.github-release") version "2.4.1"
+    kotlin("jvm") version "1.9.22"
+    kotlin("plugin.serialization") version "1.9.22"
+    id("fabric-loom") version "1.5-SNAPSHOT"
+    id("com.github.breadmoirai.github-release") version "2.5.2"
 
     `maven-publish`
     signing
 }
 
 group = "dev.nyon"
-val mcVersion = "1.20.2"
-version = "1.0.4-$mcVersion"
+val mcVersion = "1.20.4"
+version = "1.1.0-$mcVersion"
 
 repositories {
     mavenCentral()
@@ -25,13 +25,13 @@ repositories {
 dependencies {
     minecraft("com.mojang:minecraft:$mcVersion")
     mappings(loom.layered {
-        parchment("org.parchmentmc.data:parchment-1.20.2:2023.10.22@zip")
+        parchment("org.parchmentmc.data:parchment-1.20.3:2023.12.31@zip")
         officialMojangMappings()
     })
     implementation("org.vineflower:vineflower:1.9.3")
-    implementation("net.fabricmc:fabric-loader:0.14.24")
+    implementation("net.fabricmc:fabric-loader:0.15.5")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
 }
 
 tasks {
@@ -65,12 +65,12 @@ val changelogText = if (changelogFile.notExists()) "" else changelogFile.readTex
 githubRelease {
     token(findProperty("github.token")?.toString())
 
-    owner("btwonion")
-    repo("konfig")
-    releaseName(project.version.toString())
-    tagName(project.version.toString())
-    body(changelogText)
-    targetCommitish("master")
+    owner = "btwonion"
+    repo = "konfig"
+    releaseName = project.version.toString()
+    tagName = project.version.toString()
+    body = changelogText
+    targetCommitish = "master"
     setReleaseAssets(tasks["remapJar"].outputs.files)
 }
 

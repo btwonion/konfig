@@ -1,15 +1,13 @@
 package dev.nyon.konfig.config
 
 import dev.nyon.konfig.internal.InternalKonfigApi
-import kotlinx.serialization.*
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import net.fabricmc.loader.api.FabricLoader
-import kotlin.io.path.createFile
-import kotlin.io.path.notExists
-import kotlin.io.path.readText
-import kotlin.io.path.writeText
+import java.nio.file.Path
+import kotlin.io.path.*
 
 @InternalKonfigApi
 var configSettings: ConfigSettings? = null
@@ -24,22 +22,21 @@ val json = Json {
     encodeDefaults = true
 }
 
-@Suppress("SpellCheckingInspection")
 /**
  * This is the function that defines the base properties for config serialization.
  *
- * @param name the name, the config file should hold, e.g. 'autodrop'
+ * @param path the path, the config file should hold, e.g. '~/.minecraft/config/autodrop/autodrop.json'
  * @param currentVersion the up-to-date config version
  * @param defaultConfig the default config instance for initial config creation
  * @param migration the consumer used to migrate configs to newer versions
  */
 fun <T> config(
-    name: String,
+    path: Path,
     currentVersion: Int,
     defaultConfig: T,
     migration: Migration<T>
 ) {
-    configSettings = ConfigSettings(name, currentVersion, migration)
+    configSettings = ConfigSettings(path, currentVersion, migration)
     defaultInstance = defaultConfig
 }
 
@@ -51,8 +48,9 @@ fun <T> config(
 @Suppress("unused")
 inline fun <reified T> loadConfig(): @Serializable T? {
     if (configSettings == null) return null
-    val path = FabricLoader.getInstance().configDir.resolve("${configSettings!!.name}.json")
+    val path = configSettings!!.path
     if (path.notExists()) {
+        path.parent.createDirectories()
         path.createFile()
         saveConfig(defaultInstance as T)
         return defaultInstance as T
@@ -67,7 +65,10 @@ inline fun <reified T> loadConfig(): @Serializable T? {
             saveConfig(defaultInstance as T)
             return defaultInstance as T
         }
-        val config = configSettings!!.migration.invoke(if (version == null) jsonTree else jsonTree.jsonObject["config"] ?: jsonTree, version) as? T
+        val config = configSettings!!.migration.invoke(
+            if (version == null) jsonTree
+            else jsonTree.jsonObject["config"] ?: jsonTree, version
+        ) as? T
         saveConfig(config ?: defaultInstance as T)
         return config
     }
@@ -81,7 +82,7 @@ inline fun <reified T> loadConfig(): @Serializable T? {
  */
 inline fun <reified T> saveConfig(config: @Serializable T) {
     if (configSettings == null) return
-    val path = FabricLoader.getInstance().configDir.resolve("${configSettings!!.name}.json")
+    val path = configSettings!!.path
 
     path.writeText(json.encodeToString(Konfig(configSettings!!.currentVersion, config)))
 }

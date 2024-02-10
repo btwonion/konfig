@@ -4,23 +4,14 @@ import dev.nyon.konfig.internal.InternalKonfigApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonBuilder
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import java.nio.file.Path
 import kotlin.io.path.*
 
 @InternalKonfigApi
-var configSettings: ConfigSettings? = null
-
-@InternalKonfigApi
-var defaultInstance: @Serializable Any? = null
-
-@InternalKonfigApi
-val json = Json {
-    prettyPrint = true
-    ignoreUnknownKeys = true
-    encodeDefaults = true
-}
+var configFiles: MutableList<ConfigFile<*>> = mutableListOf()
 
 /**
  * This is the function that defines the base properties for config serialization.
@@ -28,16 +19,23 @@ val json = Json {
  * @param path the path, the config file should hold, e.g. '~/.minecraft/config/autodrop/autodrop.json'
  * @param currentVersion the up-to-date config version
  * @param defaultConfig the default config instance for initial config creation
+ * @param jsonBuilder the consumer used to configure the json serializer
  * @param migration the consumer used to migrate configs to newer versions
  */
-fun <T> config(
+inline fun <reified T : Any> config(
     path: Path,
     currentVersion: Int,
     defaultConfig: T,
-    migration: Migration<T>
+    crossinline jsonBuilder: JsonBuilder.() -> Unit = {},
+    noinline migration: Migration<T>
 ) {
-    configSettings = ConfigSettings(path, currentVersion, migration)
-    defaultInstance = defaultConfig
+    val json = Json {
+        prettyPrint = true
+        ignoreUnknownKeys = true
+        encodeDefaults = true
+        jsonBuilder()
+    }
+    configFiles.add(ConfigFile(T::class, ConfigSettings(path, currentVersion, migration), defaultConfig, json))
 }
 
 /**
@@ -45,15 +43,20 @@ fun <T> config(
  *
  * @return the encoded config or null if the configSettings, which are defined with [config], are null
  */
-@Suppress("unused")
-inline fun <reified T> loadConfig(): @Serializable T? {
-    if (configSettings == null) return null
-    val path = configSettings!!.path
+@Suppress("unused", "unchecked_cast")
+inline fun <reified T : Any> loadConfig(): @Serializable T? {
+    val file = configFiles.find { it.type == T::class } as? ConfigFile<T>
+    if (file == null) return null
+
+    val json = file.json
+    val defaultInstance = file.defaultInstance
+    val path = file.settings.path
+
     if (path.notExists()) {
         path.parent.createDirectories()
         path.createFile()
-        saveConfig(defaultInstance as T)
-        return defaultInstance as T
+        saveConfig<T>(defaultInstance)
+        return defaultInstance
     }
     val text = path.readText()
     try {
@@ -61,15 +64,15 @@ inline fun <reified T> loadConfig(): @Serializable T? {
     } catch (e: Throwable) {
         val jsonTree = json.parseToJsonElement(text)
         val version = jsonTree.jsonObject["version"]?.jsonPrimitive?.content?.toIntOrNull()
-        if (version == configSettings!!.currentVersion) {
-            saveConfig(defaultInstance as T)
-            return defaultInstance as T
+        if (version == file.settings.currentVersion) {
+            saveConfig(defaultInstance)
+            return defaultInstance
         }
-        val config = configSettings!!.migration.invoke(
+        val config = file.settings.migration.invoke(
             if (version == null) jsonTree
             else jsonTree.jsonObject["config"] ?: jsonTree, version
         ) as? T
-        saveConfig(config ?: defaultInstance as T)
+        saveConfig(config ?: defaultInstance)
         return config
     }
 }
@@ -80,11 +83,13 @@ inline fun <reified T> loadConfig(): @Serializable T? {
  *
  * @param config the config
  */
-inline fun <reified T> saveConfig(config: @Serializable T) {
-    if (configSettings == null) return
-    val path = configSettings!!.path
+@Suppress("unchecked_cast")
+inline fun <reified T : Any> saveConfig(config: @Serializable T) {
+    val file = configFiles.find { it.type == T::class } as? ConfigFile<T>
+    if (file == null) return
+    val path = file.settings.path
 
-    path.writeText(json.encodeToString(Konfig(configSettings!!.currentVersion, config)))
+    path.writeText(file.json.encodeToString(Konfig(file.settings.currentVersion, config)))
 }
 
 @InternalKonfigApi

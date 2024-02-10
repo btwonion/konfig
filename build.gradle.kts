@@ -15,7 +15,7 @@ plugins {
 
 group = "dev.nyon"
 val mcVersion = "1.20.4"
-version = "1.1.0-$mcVersion"
+version = "2.0.0-$mcVersion"
 
 repositories {
     mavenCentral()
@@ -29,9 +29,11 @@ dependencies {
         officialMojangMappings()
     })
     implementation("org.vineflower:vineflower:1.9.3")
-    implementation("net.fabricmc:fabric-loader:0.15.5")
+    implementation("net.fabricmc:fabric-loader:0.15.6")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+
+    testImplementation(kotlin("test"))
 }
 
 tasks {
@@ -59,8 +61,7 @@ kotlin {
     }
 }
 
-val changelogFile: Path = rootDir.toPath().resolve("changelogs/${project.version}.md")
-val changelogText = if (changelogFile.notExists()) "" else changelogFile.readText()
+val changelogText = rootDir.toPath().resolve("changelog.md").readText()
 
 githubRelease {
     token(findProperty("github.token")?.toString())

@@ -22,10 +22,12 @@ repositories {
 
 dependencies {
     minecraft("com.mojang:minecraft:$mcVersion")
-    mappings(loom.layered {
-        parchment("org.parchmentmc.data:parchment-1.20.3:2023.12.31@zip")
-        officialMojangMappings()
-    })
+    mappings(
+        loom.layered {
+            parchment("org.parchmentmc.data:parchment-1.20.3:2023.12.31@zip")
+            officialMojangMappings()
+        }
+    )
     implementation("org.vineflower:vineflower:1.9.3")
     implementation("net.fabricmc:fabric-loader:0.15.6")
 

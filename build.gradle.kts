@@ -13,7 +13,7 @@ plugins {
 
 group = "dev.nyon"
 val mcVersion = "1.20.4"
-version = "2.0.0-$mcVersion"
+version = "2.0.1-$mcVersion"
 
 repositories {
     mavenCentral()

@@ -8,7 +8,11 @@ import kotlinx.serialization.json.JsonBuilder
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import java.nio.file.Path
-import kotlin.io.path.*
+import kotlin.io.path.createDirectories
+import kotlin.io.path.createFile
+import kotlin.io.path.notExists
+import kotlin.io.path.readText
+import kotlin.io.path.writeText
 
 @InternalKonfigApi
 var configFiles: MutableList<ConfigFile<*>> = mutableListOf()
@@ -29,12 +33,13 @@ inline fun <reified T : Any> config(
     crossinline jsonBuilder: JsonBuilder.() -> Unit = {},
     noinline migration: Migration<T>
 ) {
-    val json = Json {
-        prettyPrint = true
-        ignoreUnknownKeys = true
-        encodeDefaults = true
-        jsonBuilder()
-    }
+    val json =
+        Json {
+            prettyPrint = true
+            ignoreUnknownKeys = true
+            encodeDefaults = true
+            jsonBuilder()
+        }
     configFiles.add(ConfigFile(T::class, ConfigSettings(path, currentVersion, migration), defaultConfig, json))
 }
 
@@ -68,10 +73,15 @@ inline fun <reified T : Any> loadConfig(): @Serializable T? {
             saveConfig(defaultInstance)
             return defaultInstance
         }
-        val config = file.settings.migration.invoke(
-            if (version == null) jsonTree
-            else jsonTree.jsonObject["config"] ?: jsonTree, version
-        ) as? T
+        val config =
+            file.settings.migration.invoke(
+                if (version == null) {
+                    jsonTree
+                } else {
+                    jsonTree.jsonObject["config"] ?: jsonTree
+                },
+                version
+            ) as? T
         saveConfig(config ?: defaultInstance)
         return config
     }

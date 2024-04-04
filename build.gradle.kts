@@ -1,6 +1,4 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.nio.file.Path
-import kotlin.io.path.notExists
 import kotlin.io.path.readText
 
 plugins {

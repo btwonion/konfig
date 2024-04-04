@@ -92,6 +92,7 @@ inline fun <reified T : @Serializable Any> Path.initializedFile(defaultInstance:
     return true
 }
 
+@InternalKonfigApi
 inline fun <reified T : @Serializable Any> handleException(
     json: Json,
     fileText: String,

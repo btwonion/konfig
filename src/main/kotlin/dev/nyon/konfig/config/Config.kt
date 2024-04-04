@@ -36,7 +36,6 @@ inline fun <reified T : @Serializable Any> config(
     val json =
         Json {
             prettyPrint = true
-            ignoreUnknownKeys = true
             encodeDefaults = true
             jsonBuilder()
         }

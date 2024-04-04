@@ -10,7 +10,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
-import kotlin.io.path.notExists
+import kotlin.io.path.exists
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
@@ -26,7 +26,7 @@ var configFiles: MutableList<ConfigFile<*>> = mutableListOf()
  * @param jsonBuilder the consumer used to configure the json serializer
  * @param migration the consumer used to migrate configs to newer versions
  */
-inline fun <reified T : Any> config(
+inline fun <reified T : @Serializable Any> config(
     path: Path,
     currentVersion: Int,
     defaultConfig: T,
@@ -49,41 +49,21 @@ inline fun <reified T : Any> config(
  * @return the encoded config or null if the configSettings, which are defined with [config], are null
  */
 @Suppress("unused", "unchecked_cast")
-inline fun <reified T : Any> loadConfig(): @Serializable T? {
-    val file = configFiles.find { it.type == T::class } as? ConfigFile<T>
-    if (file == null) return null
+inline fun <reified T : @Serializable Any> loadConfig(): @Serializable T {
+    val configFile = configFiles.find { it.type == T::class } as? ConfigFile<T>
+    if (configFile == null) throw IllegalArgumentException("No config for class ${T::class.simpleName} found!")
 
-    val json = file.json
-    val defaultInstance = file.defaultInstance
-    val path = file.settings.path
+    val json = configFile.json
+    val defaultInstance = configFile.defaultInstance
+    val path = configFile.settings.path
 
-    if (path.notExists()) {
-        path.parent.createDirectories()
-        path.createFile()
-        saveConfig<T>(defaultInstance)
-        return defaultInstance
-    }
+    if (path.initializedFile(defaultInstance)) return defaultInstance
+
     val text = path.readText()
-    try {
-        return json.decodeFromString<Konfig<T>>(text).config
+    return try {
+        json.decodeFromString<Konfig<T>>(text).config
     } catch (e: Throwable) {
-        val jsonTree = json.parseToJsonElement(text)
-        val version = jsonTree.jsonObject["version"]?.jsonPrimitive?.content?.toIntOrNull()
-        if (version == file.settings.currentVersion) {
-            saveConfig(defaultInstance)
-            return defaultInstance
-        }
-        val config =
-            file.settings.migration.invoke(
-                if (version == null) {
-                    jsonTree
-                } else {
-                    jsonTree.jsonObject["config"] ?: jsonTree
-                },
-                version
-            ) as? T
-        saveConfig(config ?: defaultInstance)
-        return config
+        handleException(json, text, configFile)
     }
 }
 
@@ -94,7 +74,7 @@ inline fun <reified T : Any> loadConfig(): @Serializable T? {
  * @param config the config
  */
 @Suppress("unchecked_cast")
-inline fun <reified T : Any> saveConfig(config: @Serializable T) {
+inline fun <reified T : @Serializable Any> saveConfig(config: @Serializable T) {
     val file = configFiles.find { it.type == T::class } as? ConfigFile<T>
     if (file == null) return
     val path = file.settings.path
@@ -103,6 +83,36 @@ inline fun <reified T : Any> saveConfig(config: @Serializable T) {
 }
 
 @InternalKonfigApi
-@Suppress("SpellCheckingInspection")
-@Serializable
-data class Konfig<T>(val version: Int, val config: @Serializable T)
+inline fun <reified T : @Serializable Any> Path.initializedFile(defaultInstance: T): Boolean {
+    if (exists()) return false
+    parent.createDirectories()
+    createFile()
+
+    saveConfig<T>(defaultInstance)
+    return true
+}
+
+inline fun <reified T : @Serializable Any> handleException(
+    json: Json,
+    fileText: String,
+    configFile: ConfigFile<T>
+): @Serializable T {
+    val jsonTree = json.parseToJsonElement(fileText)
+    val version = jsonTree.jsonObject["version"]?.jsonPrimitive?.content?.toIntOrNull()
+    if (version == configFile.settings.currentVersion) {
+        saveConfig(configFile.defaultInstance)
+        return configFile.defaultInstance
+    }
+
+    val config =
+        configFile.settings.migration.invoke(
+            if (version == null) {
+                jsonTree
+            } else {
+                jsonTree.jsonObject["config"] ?: jsonTree
+            },
+            version
+        ) as? T
+    saveConfig(config ?: configFile.defaultInstance)
+    return config ?: configFile.defaultInstance
+}

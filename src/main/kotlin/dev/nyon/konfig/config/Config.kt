@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonBuilder
+import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import java.nio.file.Path
@@ -100,7 +101,7 @@ inline fun <reified T : @Serializable Any> handleException(
     configFile: ConfigFile<T>
 ): @Serializable T {
     val jsonTree = json.parseToJsonElement(fileText)
-    val version = jsonTree.jsonObject["version"]?.jsonPrimitive?.content?.toIntOrNull()
+    val version = jsonTree.jsonObject["version"]?.jsonPrimitive?.intOrNull
     if (version == configFile.settings.currentVersion) {
         saveConfig(configFile.defaultInstance)
         return configFile.defaultInstance

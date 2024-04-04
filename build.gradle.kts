@@ -2,9 +2,9 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import kotlin.io.path.readText
 
 plugins {
-    kotlin("jvm") version "1.9.22"
-    kotlin("plugin.serialization") version "1.9.22"
-    id("fabric-loom") version "1.5-SNAPSHOT"
+    kotlin("jvm") version "1.9.23"
+    kotlin("plugin.serialization") version "1.9.23"
+    id("fabric-loom") version "1.6-SNAPSHOT"
     id("com.github.breadmoirai.github-release") version "2.5.2"
 
     `maven-publish`

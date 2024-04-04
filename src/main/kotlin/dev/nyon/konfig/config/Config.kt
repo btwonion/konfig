@@ -47,6 +47,7 @@ inline fun <reified T : @Serializable Any> config(
  * This is the function that loads the config from disk and applies a migration if necessary.
  *
  * @return the encoded config or null if the configSettings, which are defined with [config], are null
+ * @throws IllegalArgumentException if no file config for the class has been set
  */
 @Suppress("unused", "unchecked_cast")
 inline fun <reified T : @Serializable Any> loadConfig(): @Serializable T {
@@ -72,11 +73,12 @@ inline fun <reified T : @Serializable Any> loadConfig(): @Serializable T {
  * If the configSettings are not applied via the [config] function the config does not save.
  *
  * @param config the config
+ * @throws IllegalArgumentException if no file config for the class has been set
  */
 @Suppress("unchecked_cast")
 inline fun <reified T : @Serializable Any> saveConfig(config: @Serializable T) {
     val file = configFiles.find { it.type == T::class } as? ConfigFile<T>
-    if (file == null) return
+    if (file == null) throw IllegalArgumentException("No config for class ${T::class.simpleName} found!")
     val path = file.settings.path
 
     path.writeText(file.json.encodeToString(Konfig(file.settings.currentVersion, config)))

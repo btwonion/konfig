@@ -61,7 +61,11 @@ kotlin {
     }
 }
 
-val changelogText = rootDir.toPath().resolve("changelog.md").readText()
+val changelogText =
+    buildString {
+        append("# v${project.version}\n")
+        file("changelog.md").readText().also { append(it) }
+    }
 
 githubRelease {
     token(findProperty("github.token")?.toString())

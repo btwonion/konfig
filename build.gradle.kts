@@ -1,19 +1,19 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import kotlin.io.path.readText
 
 plugins {
-    kotlin("jvm") version "1.9.23"
-    kotlin("plugin.serialization") version "1.9.23"
-    id("fabric-loom") version "1.6-SNAPSHOT"
+    kotlin("jvm") version "2.0.10"
+    kotlin("plugin.serialization") version "2.0.10"
+    id("fabric-loom") version "1.7-SNAPSHOT"
     id("com.github.breadmoirai.github-release") version "2.5.2"
 
     `maven-publish`
-    signing
 }
 
 group = "dev.nyon"
 val mcVersion = "1.20.4"
-version = "2.0.1-$mcVersion"
+version = "2.0.2-$mcVersion"
 
 repositories {
     mavenCentral()
@@ -29,9 +29,9 @@ dependencies {
         }
     )
     implementation("org.vineflower:vineflower:1.9.3")
-    implementation("net.fabricmc:fabric-loader:0.15.6")
+    implementation("net.fabricmc:fabric-loader:0.15.11")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
 
     testImplementation(kotlin("test"))
 }
@@ -49,7 +49,9 @@ tasks {
     }
 
     withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "17"
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_17
+        }
     }
 }
 
@@ -98,10 +100,6 @@ publishing {
             from(components["java"])
         }
     }
-}
-
-signing {
-    sign(publishing.publications)
 }
 
 java {

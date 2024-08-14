@@ -34,12 +34,11 @@ inline fun <reified T : @Serializable Any> config(
     crossinline jsonBuilder: JsonBuilder.() -> Unit = {},
     noinline migration: Migration<T>
 ) {
-    val json =
-        Json {
-            prettyPrint = true
-            encodeDefaults = true
-            jsonBuilder()
-        }
+    val json = Json {
+        prettyPrint = true
+        encodeDefaults = true
+        jsonBuilder()
+    }
     configFiles.add(ConfigFile(T::class, ConfigSettings(path, currentVersion, migration), defaultConfig, json))
 }
 
@@ -58,13 +57,13 @@ inline fun <reified T : @Serializable Any> loadConfig(): @Serializable T {
     val defaultInstance = configFile.defaultInstance
     val path = configFile.settings.path
 
-    if (path.initializedFile(defaultInstance)) return defaultInstance
+    if (path.configInstantiated(defaultInstance)) return defaultInstance
 
     val text = path.readText()
     return try {
         json.decodeFromString<Konfig<T>>(text).config
     } catch (e: Throwable) {
-        handleException(json, text, configFile)
+        handleException(text, configFile)
     }
 }
 
@@ -84,8 +83,14 @@ inline fun <reified T : @Serializable Any> saveConfig(config: @Serializable T) {
     path.writeText(file.json.encodeToString(Konfig(file.settings.currentVersion, config)))
 }
 
+/**
+ * Either instantiate the default config or return false if the config already existed.
+ *
+ * @param defaultInstance the default instance of the config
+ * @return true if the config was instantiated or false if the config already existed
+ */
 @InternalKonfigApi
-inline fun <reified T : @Serializable Any> Path.initializedFile(defaultInstance: T): Boolean {
+inline fun <reified T : @Serializable Any> Path.configInstantiated(defaultInstance: T): Boolean {
     if (exists()) return false
     parent.createDirectories()
     createFile()
@@ -94,28 +99,40 @@ inline fun <reified T : @Serializable Any> Path.initializedFile(defaultInstance:
     return true
 }
 
+/**
+ * Handles migration or reset after faulty deserialization of the config.
+ *
+ * @param fileText the raw config text
+ * @param configFile the [ConfigFile] holding all the required data for migration
+ * @return the config after migration of reset of the config
+ */
 @InternalKonfigApi
 inline fun <reified T : @Serializable Any> handleException(
-    json: Json,
-    fileText: String,
-    configFile: ConfigFile<T>
+    fileText: String, configFile: ConfigFile<T>
 ): @Serializable T {
-    val jsonTree = json.parseToJsonElement(fileText)
+    val jsonTree = runCatching { configFile.json.parseToJsonElement(fileText) }.getOrNull() ?: return resetConfig(configFile)
     val version = jsonTree.jsonObject["version"]?.jsonPrimitive?.intOrNull
-    if (version == configFile.settings.currentVersion) {
-        saveConfig(configFile.defaultInstance)
-        return configFile.defaultInstance
-    }
+    if (version == configFile.settings.currentVersion) return resetConfig(configFile)
 
-    val config =
-        configFile.settings.migration.invoke(
-            if (version == null) {
-                jsonTree
-            } else {
-                jsonTree.jsonObject["config"] ?: jsonTree
-            },
-            version
-        ) as? T
+    val config = configFile.settings.migration.invoke(
+        if (version == null) {
+            jsonTree
+        } else {
+            jsonTree.jsonObject["config"] ?: jsonTree
+        }, version
+    ) as? T
     saveConfig(config ?: configFile.defaultInstance)
     return config ?: configFile.defaultInstance
+}
+
+/**
+ * Recreates and saves default config.
+ *
+ * @param configFile the [ConfigFile] used for getting the default config
+ * @return the default config
+ */
+@InternalKonfigApi
+inline fun <reified T : @Serializable Any> resetConfig(configFile: ConfigFile<T>): T {
+    saveConfig(configFile.defaultInstance)
+    return configFile.defaultInstance
 }

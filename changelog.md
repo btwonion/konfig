@@ -1,4 +1,3 @@
-- cleanup internal code
-- add unit tests for whole library
-- remove ignoreUnknowns from Json
-  - caused migrations not being invoked
+- fix rare crash, where config wasn't json encodable
+- improve javadocs
+- update to kotlin 2.0.10

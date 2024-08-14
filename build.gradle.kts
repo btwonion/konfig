@@ -70,7 +70,7 @@ val changelogText =
     }
 
 githubRelease {
-    token(findProperty("github.token")?.toString())
+    token(providers.environmentVariable("GITHUB_TOKEN"))
 
     owner = "btwonion"
     repo = "konfig"
@@ -86,9 +86,9 @@ publishing {
         maven {
             name = "nyon"
             url = uri("https://repo.nyon.dev/releases")
-            credentials(PasswordCredentials::class)
-            authentication {
-                create<BasicAuthentication>("basic")
+            credentials {
+                username = providers.environmentVariable("NYON_USERNAME").orNull
+                password = providers.environmentVariable("NYON_PASSWORD").orNull
             }
         }
     }

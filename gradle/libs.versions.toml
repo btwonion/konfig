@@ -1,0 +1,22 @@
+[versions]
+kotlin = "2.0.20"
+mod-publish = "0.5.+"
+architectury-loom = "1.7-SNAPSHOT"
+fabric-loader = "0.16.4"
+fabric-language-kotlin = "1.12.1+kotlin."
+vineflower = "1.10.1"
+konfig = "2.0.2-1.20.4"
+mixinextras = "0.4.1"
+
+[libraries]
+vineflower = { module = "org.vineflower:vineflower", version.ref = "vineflower" }
+konfig = { module = "dev.nyon:konfig", version.ref = "konfig" }
+fabric-loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric-loader" }
+mixinextras-common = { module = "io.github.llamalad7:mixinextras-common", version.ref = "mixinextras" }
+mixinextras-forge = { module = "io.github.llamalad7:mixinextras-forge", version.ref = "mixinextras" }
+
+[plugins]
+kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+architectury-loom = { id = "dev.architectury.loom", version.ref = "architectury-loom" }
+mod-publish = { id = "me.modmuss50.mod-publish-plugin", version.ref = "mod-publish" }

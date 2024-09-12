@@ -43,9 +43,10 @@ inline fun <reified T : @Serializable Any> config(
 }
 
 /**
- * This is the function that loads the config from disk and applies a migration if necessary.
+ * This is the function that loads the config from disk.
+ * If the configSettings are not applied via the [config] function the config does not load.
  *
- * @return the encoded config or null if the configSettings, which are defined with [config], are null
+ * @return the config
  * @throws IllegalArgumentException if no file config for the class has been set
  */
 @Suppress("unused", "unchecked_cast")
@@ -71,7 +72,7 @@ inline fun <reified T : @Serializable Any> loadConfig(): @Serializable T {
  * This is the function that saves the config to disk.
  * If the configSettings are not applied via the [config] function the config does not save.
  *
- * @param config the config
+ * @param config the config to save
  * @throws IllegalArgumentException if no file config for the class has been set
  */
 @Suppress("unchecked_cast")
@@ -126,10 +127,10 @@ inline fun <reified T : @Serializable Any> handleException(
 }
 
 /**
- * Recreates and saves default config.
+ * Resets the config to the default instance.
  *
- * @param configFile the [ConfigFile] used for getting the default config
- * @return the default config
+ * @param configFile the [ConfigFile] holding all the required data for migration
+ * @return the default instance of the config
  */
 @InternalKonfigApi
 inline fun <reified T : @Serializable Any> resetConfig(configFile: ConfigFile<T>): T {

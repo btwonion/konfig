@@ -1,0 +1,43 @@
+{
+    "schemaVersion": 1,
+    "id": "${id}",
+    "name": "${name}",
+    "description": "${description}",
+    "contact": {
+        "issues": "https://github.com/${repo}/issues",
+        "sources": "https://github.com/${repo}"
+    },
+    "authors": [
+        "btwonion"
+    ],
+    "icon": "${icon}",
+    "contributors": [],
+    "license": [
+        "GNU General Public License v3.0"
+    ],
+    "version": "${version}",
+    "environment": "*",
+    "depends": {
+        "fabric-language-kotlin": ">=${flk}",
+        "minecraft": "${mc}"
+    },
+    "entrypoints": {
+        "main": [
+            {
+                "adapter": "kotlin",
+                "value": "dev.nyon.konfig.KonfigEntrypointKt::main"
+            }
+        ]
+    },
+    "mixins": [
+        "${mixins}"
+    ],
+    "custom": {
+        "modmenu": {
+            "links": {
+                "modmenu.discord": "https://discord.gg/pmHTtZnMd3"
+            },
+            "badges": ["library"]
+        }
+    }
+}

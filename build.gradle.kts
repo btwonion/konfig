@@ -1,37 +1,23 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import kotlin.io.path.readText
 
 plugins {
-    kotlin("jvm") version "2.0.10"
-    kotlin("plugin.serialization") version "2.0.10"
-    id("fabric-loom") version "1.7-SNAPSHOT"
+    kotlin("jvm") version "2.1.0"
+    kotlin("plugin.serialization") version "2.1.0"
     id("com.github.breadmoirai.github-release") version "2.5.2"
 
     `maven-publish`
 }
 
 group = "dev.nyon"
-val mcVersion = "1.20.4"
-version = "2.0.2-$mcVersion"
+version = "2.1.0"
 
 repositories {
     mavenCentral()
-    maven("https://maven.parchmentmc.org")
 }
 
 dependencies {
-    minecraft("com.mojang:minecraft:$mcVersion")
-    mappings(
-        loom.layered {
-            parchment("org.parchmentmc.data:parchment-1.20.3:2023.12.31@zip")
-            officialMojangMappings()
-        }
-    )
-    implementation("org.vineflower:vineflower:1.9.3")
-    implementation("net.fabricmc:fabric-loader:0.15.11")
-
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
 
     testImplementation(kotlin("test"))
 }
@@ -78,7 +64,7 @@ githubRelease {
     tagName = project.version.toString()
     body = changelogText
     targetCommitish = "master"
-    setReleaseAssets(tasks["remapJar"].outputs.files)
+    setReleaseAssets(tasks["jar"].outputs.files)
 }
 
 publishing {

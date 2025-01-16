@@ -8,7 +8,6 @@ on:
       - ".gitignore"
       - "changelog.md"
       - ".editorconfig"
-      - "src/*/resources/lang/*"
   pull_request:
     paths-ignore:
       - "README.md"
@@ -16,7 +15,6 @@ on:
       - ".gitignore"
       - "changelog.md"
       - ".editorconfig"
-      - "src/*/resources/lang/*"
   workflow_dispatch:
 
 jobs:
@@ -34,7 +32,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
       - name: Build with Gradle
         run: ./gradlew build
       - uses: actions/upload-artifact@v4

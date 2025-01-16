@@ -1,11 +1,9 @@
 # konfig
 
-> Library for saving, loading and migrating configs and, in the future, useful extensions and helpers for Minecaft
-modding in Fabric environments.
+> Library for saving, loading and migrating configs
 
 ## Implementing
-This implementation uses utility of the fabric-loom gradle plugin, so make sure you have it added to your build.
-Keep in mind to replace `VERSION` with the suitable version for you. It can be found on the releases tab.
+Replace `VERSION` with the latest available version.
 
 `build.gradle.kts`
 ```kotlin
@@ -14,7 +12,7 @@ repositories {
 }
 
 dependencies {
-  include(modImplementation("dev.nyon:konfig:VERSION")!!)
+  include(implementation("dev.nyon:konfig:VERSION")!!)
 }
 ```
 
@@ -61,7 +59,4 @@ data class Config(
 On shutdown or save in a config screen you can call the `saveConfig` function to save the config to disk.
 
 ### Other
-⚠️ The development version is always the latest stable release of Minecraft.
-Therefore, new features will only be available for the current and following Minecraft versions.
-
-If you need help with any of my mods, just join my [discord server](https://nyon.dev/discord)
+If you need help with any of my mods, just join my [discord server](https://nyon.dev/discord).

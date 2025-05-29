@@ -20,7 +20,7 @@ class ConfigTest {
     @OptIn(ExperimentalSerializationApi::class)
     @Test
     fun internalConfigurationFilesShouldEqualProvided() {
-        val configSettings = ConfigSettings(testPath, 1, { _: JsonElement, _: Int? ->
+        val configSettings = ConfigSettings(testPath, 1, { _: Json, _: JsonElement, _: Int? ->
             ConfigClass()
         } as Migration<ConfigClass>)
 

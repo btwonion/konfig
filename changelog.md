@@ -1,2 +1,1 @@
-- remove fabric and minecraft dependencies
-- update kotlin and kotlinx.serialization
+- add Json to migration function - **Breaking change**

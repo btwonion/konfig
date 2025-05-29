@@ -2,7 +2,6 @@ package dev.nyon.konfig.config
 
 import dev.nyon.konfig.internal.InternalKonfigApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonBuilder
 import kotlinx.serialization.json.intOrNull
@@ -115,6 +114,7 @@ inline fun <reified T : @Serializable Any> handleException(
     if (version == configFile.settings.currentVersion) return resetConfig(configFile)
 
     val config = configFile.settings.migration.invoke(
+        configFile.json,
         if (version == null) {
             jsonTree
         } else {
